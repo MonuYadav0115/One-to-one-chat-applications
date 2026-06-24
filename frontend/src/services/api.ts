@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://one-to-one-chat-applications-1.onrender.com",
 });
 
 api.interceptors.request.use((config) => {
