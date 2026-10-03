@@ -1,4 +1,11 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  type KeyboardEvent,
+} from "react";
 import socket from "../socket/socket";
 import {
   getMessages,
@@ -46,9 +53,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
   const handleScroll = useCallback(() => {
     if (!chatContainerRef.current) return;
 
-    const { scrollTop, scrollHeight, clientHeight } =
-      chatContainerRef.current;
-
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
 
     shouldScrollRef.current = isAtBottom;
@@ -74,7 +79,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
     };
   }, [currentUserId]);
 
-  // Online Users Listener
+  // Online users listener
   useEffect(() => {
     const handleOnlineUsers = (users: string[]) => {
       setOnlineUsers(users);
@@ -95,7 +100,8 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       return;
     }
 
-    // Reset states
+    let cancelled = false; // ignore results from outdated requests
+
     setIsLoading(true);
     setError(null);
     setIsTyping(false);
@@ -106,16 +112,15 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       readerId: currentUserId,
     });
 
-    // Load messages from API
     const loadMessages = async () => {
       try {
         const data = await getMessages(selectedUser._id);
-        setMessages(data.messages || []);
-      } catch (error) {
-        console.error("Failed to load messages:", error);
-        setError("Failed to load messages");
+        if (!cancelled) setMessages(data.messages || []);
+      } catch (err) {
+        console.error("Failed to load messages:", err);
+        if (!cancelled) setError("Failed to load messages");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
@@ -123,8 +128,6 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
 
     // Handle new incoming messages
     const handleReceiveMessage = (newMessage: Message) => {
-      console.log("NEW MESSAGE RECEIVED:", newMessage);
-
       // Only show message if it belongs to current conversation
       if (
         newMessage.sender !== selectedUser._id &&
@@ -133,30 +136,28 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
         return;
       }
 
-      setMessages((prev) => {
-        // Check for duplicates
-        const alreadyExist = prev.some(
-          (msg) => msg._id === newMessage._id
-        );
+      shouldScrollRef.current = true;
 
-        if (alreadyExist) return prev;
+      setMessages((prev) =>
+        prev.some((m) => m._id === newMessage._id)
+          ? prev
+          : [...prev, newMessage]
+      );
 
-        // Auto-scroll for new messages
-        shouldScrollRef.current = true;
-
-        return [...prev, newMessage];
-      });
-
-      // Send delivery confirmation
       if (newMessage.sender === selectedUser._id) {
         socket.emit("messageDelivered", {
           messageId: newMessage._id,
           senderId: newMessage.sender,
         });
+
+        // Chat is open, so mark as read too
+        socket.emit("markMessagesRead", {
+          senderId: selectedUser._id,
+          readerId: currentUserId,
+        });
       }
     };
 
-    // Handle message status updates
     const handleMessageDelivered = (data: { messageId: string }) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -177,24 +178,18 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       );
     };
 
-    // Handle deleted messages
     const handleMessageDeleted = (data: { messageId: string }) => {
-      setMessages((prev) =>
-        prev.filter((msg) => msg._id !== data.messageId)
-      );
+      setMessages((prev) => prev.filter((msg) => msg._id !== data.messageId));
     };
 
-    // Handle typing indicators
     const handleUserTyping = (data: { userId: string }) => {
       if (data.userId === selectedUser._id) {
         setIsTyping(true);
 
-        // Clear previous timeout
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
 
-        // Set new timeout
         typingTimeoutRef.current = setTimeout(() => {
           setIsTyping(false);
         }, 2000);
@@ -211,7 +206,6 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       }
     };
 
-    // Register socket listeners
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("messageDelivered", handleMessageDelivered);
     socket.on("messageSeen", handleMessageSeen);
@@ -219,11 +213,13 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
     socket.on("userTyping", handleUserTyping);
     socket.on("userStopTyping", handleUserStopTyping);
 
-    // Cleanup
     return () => {
+      cancelled = true;
+
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("messageDelivered", handleMessageDelivered);
       socket.off("messageSeen", handleMessageSeen);
+      socket.off("messageDeleted", handleMessageDeleted);
       socket.off("userTyping", handleUserTyping);
       socket.off("userStopTyping", handleUserStopTyping);
 
@@ -233,7 +229,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
     };
   }, [selectedUser, currentUserId]);
 
-  // Send Message
+  // Send message
   const handleSend = async () => {
     if (!selectedUser || !text.trim()) return;
 
@@ -242,26 +238,26 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
     setText("");
     setError(null);
 
-    // Stop typing indicator
     socket.emit("stopTyping", {
       receiverId: selectedUser._id,
       userId: currentUserId,
     });
 
     try {
-      const data = await sendMessage(
-        selectedUser._id,
-        messageText
-      );
-
-      console.log("SEND RESPONSE:", data);
+      const data = await sendMessage(selectedUser._id, messageText);
 
       if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
         shouldScrollRef.current = true;
+
+        // Dedupe: the socket event may have already added this message
+        setMessages((prev) =>
+          prev.some((m) => m._id === data.message._id)
+            ? prev
+            : [...prev, data.message]
+        );
       }
-    } catch (error) {
-      console.error("Failed to send message:", error);
+    } catch (err) {
+      console.error("Failed to send message:", err);
       setError("Failed to send message. Please try again.");
 
       // Restore the text if sending failed
@@ -287,9 +283,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
   };
 
   // Handle input key events
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -301,30 +295,23 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
     try {
       await deleteMessage(messageId);
 
-      setMessages((prev) =>
-        prev.filter((msg) => msg._id !== messageId)
-      );
-    } catch (error) {
-      console.error("Failed to delete message:", error);
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    } catch (err) {
+      console.error("Failed to delete message:", err);
       setError("Failed to delete message");
     }
   };
 
-  // Memoize filtered messages for performance
+  // Memoize filtered messages
   const filteredMessages = useMemo(() => {
     if (!searchText.trim()) return messages;
 
     return messages.filter((msg) =>
-      msg.message
-        .toLowerCase()
-        .includes(searchText.toLowerCase())
+      msg.message.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [messages, searchText]);
 
-  // Check if selected user is online
-  const isUserOnline = onlineUsers.includes(
-    selectedUser?._id || ""
-  );
+  const isUserOnline = onlineUsers.includes(selectedUser?._id || "");
 
   // Empty state
   if (!selectedUser) {
@@ -362,7 +349,6 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
-          {/* User Avatar */}
           <div className="relative">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
               <span className="text-sm font-semibold text-white">
@@ -370,17 +356,13 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
               </span>
             </div>
 
-            {/* Online/Offline Indicator */}
             <div
               className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white ${
-                isUserOnline
-                  ? "bg-green-500"
-                  : "bg-gray-400"
+                isUserOnline ? "bg-green-500" : "bg-gray-400"
               }`}
             />
           </div>
 
-          {/* User Info */}
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {selectedUser.name}
@@ -451,11 +433,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
         {error && !isLoading && (
           <div className="mb-4 rounded-lg bg-red-50 p-3">
             <p className="flex items-center gap-2 text-sm text-red-600">
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -468,33 +446,32 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
           </div>
         )}
 
+        {/* Empty messages state */}
+        {!isLoading && filteredMessages.length === 0 && !error && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <svg
+              className="h-16 w-16 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+              />
+            </svg>
+
+            <p className="mt-4 text-sm text-gray-500">
+              {searchText
+                ? "No messages match your search"
+                : "No messages yet. Say hello!"}
+            </p>
+          </div>
+        )}
+
         {/* Messages List */}
-        {!isLoading &&
-          filteredMessages.length === 0 &&
-          !error && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <svg
-                className="h-16 w-16 text-gray-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                />
-              </svg>
-
-              <p className="mt-4 text-sm text-gray-500">
-                {searchText
-                  ? "No messages match your search"
-                  : "No messages yet. Say hello!"}
-              </p>
-            </div>
-          )}
-
         {filteredMessages.map((msg) => (
           <MessageBubble
             key={msg._id}
@@ -513,9 +490,7 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
               <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0.2s]" />
             </div>
 
-            <span className="text-xs text-gray-500">
-              typing...
-            </span>
+            <span className="text-xs text-gray-500">typing...</span>
           </div>
         )}
 
