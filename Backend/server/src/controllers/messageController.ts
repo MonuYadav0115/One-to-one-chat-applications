@@ -216,12 +216,35 @@ export const deleteMessage = async(
     message.message =
       "This message was deleted";
 
+    // await message.save();
+
+    // res.status(200).json({
+    //   success:true,
+    //   message
+    // });
+
     await message.save();
 
-    res.status(200).json({
-      success:true,
-      message
-    });
+const io = getIO();
+
+io.to(message.sender.toString()).emit(
+  "messageDeleted",
+  {
+    messageId: message._id,
+  }
+);
+
+io.to(message.receiver.toString()).emit(
+  "messageDeleted",
+  {
+    messageId: message._id,
+  }
+);
+
+res.status(200).json({
+  success: true,
+  message,
+});
 
   }
   catch(error){
