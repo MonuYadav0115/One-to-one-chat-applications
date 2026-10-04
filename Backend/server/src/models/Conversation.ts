@@ -16,12 +16,12 @@ const conversationSchema = new Schema<IConversation>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Conversation = mongoose.model<IConversation>(
   "Conversation",
-  conversationSchema
+  conversationSchema,
 );
 
 export default Conversation;

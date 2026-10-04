@@ -3,116 +3,65 @@ import mongoose from "mongoose";
 import Message from "../models/Message";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { getIO } from "../socket";
-import {isUserOnline} from "../socket";
-
+import { isUserOnline } from "../socket";
 
 export const sendMessage = async (
   req: AuthRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
-
   try {
-
-    const {
-      receiverId,
-      message
-    } = req.body;
-
-
+    const { receiverId, message } = req.body;
 
     const newMessage = await Message.create({
       sender: req.userId,
       receiver: receiverId,
       message,
-      status: "sent" }); 
+      status: "sent",
+    });
 
-      if(
-  isUserOnline(receiverId)
-){
+    if (isUserOnline(receiverId)) {
+      await Message.findByIdAndUpdate(newMessage._id, {
+        status: "delivered",
+      });
 
-  await Message.findByIdAndUpdate(
-    newMessage._id,
-    {
-      status:"delivered"
+      newMessage.status = "delivered";
     }
-  );
 
-  newMessage.status =
-    "delivered";
+    console.log("EMIT MESSAGE TO:", receiverId);
 
-}
+    getIO().to(receiverId).emit("receiveMessage", newMessage);
 
-console.log("EMIT MESSAGE TO:",receiverId);
+    getIO().to(receiverId).emit("newUnreadMessage", {
+      senderId: req.userId,
+    });
 
+    // delivered update
 
-getIO()
-.to(receiverId)
-.emit(
- "receiveMessage",
- newMessage
-);
+    if (req.userId) {
+      getIO().to(req.userId).emit("messageDelivered", newMessage._id);
+    }
 
-getIO()
-.to(receiverId)
-.emit(
- "newUnreadMessage",
- {
-   senderId: req.userId
- }
-);
-
-
-// delivered update
-
-if(req.userId){
-
- getIO()
- .to(req.userId)
- .emit(
-  "messageDelivered",
-  newMessage._id
- );
-
-}
-
-
-console.log(
-  "MESSAGE EMITTED"
-);
-
-
+    console.log("MESSAGE EMITTED");
 
     res.status(201).json({
+      success: true,
 
-      success:true,
-
-      message:newMessage,
-
+      message: newMessage,
     });
-
-
-
-  } catch(error) {
-
+  } catch (error) {
     console.error(error);
 
-
     res.status(500).json({
+      success: false,
 
-      success:false,
-
-      message:"Server Error",
-
+      message: "Server Error",
     });
-
-
   }
-
 };
 
 export const getMessages = async (
   req: AuthRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { receiverId } = req.params;
@@ -144,68 +93,40 @@ export const getMessages = async (
   }
 };
 
-export const markMessageSeen = async(
- req:AuthRequest,
- res:Response
-)=>{
+export const markMessageSeen = async (req: AuthRequest, res: Response) => {
+  try {
+    const { messageId } = req.body;
 
- try{
+    await Message.findByIdAndUpdate(messageId, {
+      status: "seen",
+      isRead: true,
+    });
 
+    res.json({
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
 
- const {
-   messageId
- } = req.body;
-
-
-await Message.findByIdAndUpdate(
-  messageId,
-  {
-    status:"seen",
-    isRead:true
+    res.status(500).json({
+      success: false,
+    });
   }
-);
-
-
- res.json({
-  success:true
- });
-
-
- }
- catch(error){
-
- console.log(error);
-
- res.status(500)
- .json({
-  success:false
- });
-
- }
-
 };
 
-export const deleteMessage = async(
+export const deleteMessage = async (
   req: AuthRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
+  try {
+    const { messageId } = req.params;
 
-  try{
+    const message = await Message.findById(messageId);
 
-    const {
-      messageId
-    } = req.params;
-
-    const message =
-      await Message.findById(
-        messageId
-      );
-
-    if(!message){
-
+    if (!message) {
       res.status(404).json({
-        success:false,
-        message:"Message not found"
+        success: false,
+        message: "Message not found",
       });
 
       return;
@@ -213,8 +134,7 @@ export const deleteMessage = async(
 
     message.isDeleted = true;
 
-    message.message =
-      "This message was deleted";
+    message.message = "This message was deleted";
 
     // await message.save();
 
@@ -225,107 +145,64 @@ export const deleteMessage = async(
 
     await message.save();
 
-const io = getIO();
+    const io = getIO();
 
-io.to(message.sender.toString()).emit(
-  "messageDeleted",
-  {
-    messageId: message._id,
-  }
-);
+    io.to(message.sender.toString()).emit("messageDeleted", {
+      messageId: message._id,
+    });
 
-io.to(message.receiver.toString()).emit(
-  "messageDeleted",
-  {
-    messageId: message._id,
-  }
-);
+    io.to(message.receiver.toString()).emit("messageDeleted", {
+      messageId: message._id,
+    });
 
-res.status(200).json({
-  success: true,
-  message,
-});
-
-  }
-  catch(error){
-
+    res.status(200).json({
+      success: true,
+      message,
+    });
+  } catch (error) {
     console.log(error);
 
     res.status(500).json({
-      success:false,
-      message:"Server Error"
+      success: false,
+      message: "Server Error",
     });
-
   }
-
 };
 
-export const getUnreadCounts = async(
-  req: AuthRequest,
-  res: Response
-)=>{
+export const getUnreadCounts = async (req: AuthRequest, res: Response) => {
+  try {
+    const unreadMessages = await Message.aggregate([
+      {
+        $match: {
+          receiver: new mongoose.Types.ObjectId(req.userId),
 
-  try{
-
-    const unreadMessages =
-      await Message.aggregate([
-
-        {
-          $match:{
-
-            receiver:
-              new mongoose.Types.ObjectId(
-                req.userId
-              ),
-
-            isRead:false
-
-          }
+          isRead: false,
         },
+      },
 
+      {
+        $group: {
+          _id: "$sender",
 
-        {
-          $group:{
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+    ]);
 
-            _id:"$sender",
-
-            count:{
-              $sum:1
-            }
-
-          }
-        }
-
-      ]);
-
-
-    console.log(
-      "UNREAD COUNT:",
-      unreadMessages
-    );
-
+    console.log("UNREAD COUNT:", unreadMessages);
 
     res.json({
+      success: true,
 
-      success:true,
-
-      unreadMessages
-
+      unreadMessages,
     });
-
-
-  }
-  catch(error){
-
+  } catch (error) {
     console.log(error);
 
-
     res.status(500).json({
-
-      success:false
-
+      success: false,
     });
-
   }
-
 };

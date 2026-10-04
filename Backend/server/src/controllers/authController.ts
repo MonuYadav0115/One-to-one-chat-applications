@@ -2,14 +2,12 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 
 import User from "../models/User";
-import jwt from "jsonwebtoken"; 
+import jwt from "jsonwebtoken";
 import { AuthRequest } from "../middleware/authMiddleware";
-
-
 
 export const registerUser = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { name, email, password } = req.body;
@@ -64,10 +62,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       res.status(400).json({
@@ -84,7 +79,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       process.env.JWT_SECRET as string,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     res.status(200).json({
@@ -106,10 +101,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getMe = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = await User.findById(req.userId).select("-password");
 

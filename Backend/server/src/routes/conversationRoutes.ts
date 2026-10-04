@@ -7,4 +7,4 @@ const router = express.Router();
 
 router.post("/", protect, createConversation);
 
-export default router; 
+export default router;

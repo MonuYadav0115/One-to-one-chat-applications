@@ -6,39 +6,19 @@ import {
   getMessages,
   markMessageSeen,
   deleteMessage,
-  getUnreadCounts
+  getUnreadCounts,
 } from "../controllers/messageController";
 
 const router = express.Router();
 
-router.post(
-  "/",
-  protect,
-  sendMessage
-);
+router.post("/", protect, sendMessage);
 
-router.get(
-  "/unread/count",
-  protect,
-  getUnreadCounts
-);
+router.get("/unread/count", protect, getUnreadCounts);
 
-router.get(
-  "/:receiverId",
-  protect,
-  getMessages
-);
+router.get("/:receiverId", protect, getMessages);
 
-router.put(
-  "/seen",
-  protect,
-  markMessageSeen
-);
+router.put("/seen", protect, markMessageSeen);
 
-router.delete(
-  "/:messageId",
-  protect,
-  deleteMessage
-);
+router.delete("/:messageId", protect, deleteMessage);
 
 export default router;

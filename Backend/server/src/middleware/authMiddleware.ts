@@ -8,7 +8,7 @@ export interface AuthRequest extends Request {
 export const protect = (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   try {
     const authHeader = req.headers.authorization;
@@ -23,10 +23,9 @@ export const protect = (
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as { userId: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      userId: string;
+    };
 
     req.userId = decoded.userId;
 
@@ -37,4 +36,4 @@ export const protect = (
       message: "Invalid token",
     });
   }
-}; 
+};

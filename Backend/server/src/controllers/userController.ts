@@ -5,7 +5,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 
 export const getUsers = async (
   req: AuthRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const users = await User.find({

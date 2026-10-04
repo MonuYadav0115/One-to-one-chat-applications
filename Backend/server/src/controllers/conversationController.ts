@@ -5,7 +5,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 
 export const createConversation = async (
   req: AuthRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { receiverId } = req.body;

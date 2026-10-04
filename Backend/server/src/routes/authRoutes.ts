@@ -1,10 +1,6 @@
 import express from "express";
 
-import {
-  registerUser,
-  loginUser,
-  getMe,
-} from "../controllers/authController";
+import { registerUser, loginUser, getMe } from "../controllers/authController";
 
 import { protect } from "../middleware/authMiddleware";
 
