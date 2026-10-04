@@ -372,8 +372,9 @@ if (!selectedUser) {
   return (
     <div className="flex flex-1 flex-col bg-white">
       {/* Header */}
-<div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
-  <div className="flex min-w-0 items-center gap-3">
+      {/* Header */}
+<div className="border-b border-gray-200 bg-white px-4 py-3">
+  <div className="flex items-center gap-3">
     {/* Avatar */}
     <div className="relative shrink-0">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
@@ -382,7 +383,7 @@ if (!selectedUser) {
         </span>
       </div>
 
-      {/* Online Indicator */}
+      {/* Online indicator */}
       <span
         className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${
           isUserOnline ? "bg-green-500" : "bg-gray-400"
@@ -390,11 +391,19 @@ if (!selectedUser) {
       />
     </div>
 
-    {/* User Info */}
-    <div className="min-w-0">
-      <h2 className="truncate text-sm font-semibold text-gray-900 md:text-base">
-        {selectedUser.name}
-      </h2>
+    {/* User info */}
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2">
+        <h2 className="truncate text-sm font-semibold text-gray-900 md:text-base">
+          {selectedUser.name}
+        </h2>
+
+        {isUserOnline && (
+          <span className="hidden rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600 sm:inline-block">
+            Active
+          </span>
+        )}
+      </div>
 
       <div className="mt-0.5 flex items-center gap-1.5">
         <span
@@ -409,6 +418,15 @@ if (!selectedUser) {
           }`}
         >
           {isUserOnline ? "Online" : "Offline"}
+        </span>
+      </div>
+    </div>
+
+    {/* Conversation status */}
+    <div className="hidden shrink-0 sm:block">
+      <div className="rounded-lg bg-gray-50 px-3 py-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+          Chat
         </span>
       </div>
     </div>
@@ -472,7 +490,7 @@ if (!selectedUser) {
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-4"
+        className="flex-1 overflow-y-auto bg-slate-50 px-2 py-4 sm:px-4"
       >
         {/* Loading State */}
         {isLoading && (
@@ -538,23 +556,27 @@ if (!selectedUser) {
         ))}
 
         {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex items-center gap-2 px-4 py-2">
-            <div className="flex items-center gap-1 rounded-full bg-gray-100 px-4 py-2">
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0.1s]" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0.2s]" />
-            </div>
+{isTyping && (
+  <div className="flex items-center gap-2 px-2 py-2 sm:px-4">
+    <div className="rounded-2xl rounded-bl-md bg-white px-4 py-2.5 shadow-sm ring-1 ring-gray-200">
+      <div className="flex items-center gap-1">
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0.15s]" />
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0.3s]" />
+      </div>
+    </div>
 
-            <span className="text-xs text-gray-500">typing...</span>
-          </div>
-        )}
+    <span className="text-[11px] font-medium text-gray-400">
+      typing...
+    </span>
+  </div>
+)}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
-<div className="border-t border-gray-200 bg-white px-3 py-3 md:px-4">
+<div className="border-t border-gray-200 bg-white px-2 py-3 sm:px-4">
   <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm transition-all focus-within:border-blue-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/10">
     <textarea
       value={text}
@@ -568,7 +590,7 @@ if (!selectedUser) {
     <button
       onClick={handleSend}
       disabled={!text.trim()}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-300"
+     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition-all duration-200 hover:bg-blue-700 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
       title="Send message"
       aria-label="Send message"
     >
