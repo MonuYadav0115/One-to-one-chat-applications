@@ -163,45 +163,119 @@ const Sidebar = ({ setSelectedUser }: SidebarProps) => {
 
   // ===== RENDER =====
   return (
-    <div className="flex h-full w-80 flex-col border-r border-gray-200 bg-white">
+    <div className="flex h-full w-full flex-col border-r border-gray-200 bg-white sm:w-80">
       {/* Current User Info */}
-      {currentUser && (
-        <div className="flex items-center gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3">
-          <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-teal-500">
-            <span className="text-sm font-semibold text-white">
-              {currentUser.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-gray-900">
-              {currentUser.name}
-            </p>
-            <p className="truncate text-xs text-gray-500">
-              {currentUser.email}
-            </p>
-          </div>
-          <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-        </div>
-      )}
-
-      {/* Header with search */}
-      <div className="border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Users</h2>
-          <span className="text-xs text-gray-500">
-            {onlineUsers.length} online
+{currentUser && (
+  <div className="border-b border-gray-200 bg-white px-4 py-4">
+    <div className="flex items-center gap-3">
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 shadow-sm">
+          <span className="text-base font-semibold text-white">
+            {currentUser.name.charAt(0).toUpperCase()}
           </span>
         </div>
-        <div className="mt-2">
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+
+        {/* Online indicator */}
+        <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
+      </div>
+
+      {/* User details */}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-gray-900">
+          {currentUser.name}
+        </p>
+
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span className="text-xs text-green-600">
+            Active now
+          </span>
         </div>
       </div>
+
+      {/* Profile badge */}
+      <div className="shrink-0 rounded-full bg-green-50 px-2 py-1">
+        <span className="text-[10px] font-medium text-green-600">
+          You
+        </span>
+      </div>
+    </div>
+  </div>
+)}
+
+      {/* Header with search */}
+     
+<div className="border-b border-gray-200 bg-white px-4 py-3">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <h2 className="text-sm font-semibold text-gray-900">
+        Conversations
+      </h2>
+
+      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+        {users.length}
+      </span>
+    </div>
+
+    <div className="flex items-center gap-1.5">
+      <span className="h-2 w-2 rounded-full bg-green-500" />
+      <span className="text-xs font-medium text-gray-500">
+        {onlineUsers.length} online
+      </span>
+    </div>
+  </div>
+
+  {/* Search */}
+  <div className="relative mt-3">
+    {/* Search icon */}
+    <svg
+      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m21 21-4.35-4.35m1.35-5.15a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+      />
+    </svg>
+
+    <input
+      type="text"
+      placeholder="Search conversations..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-9 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+    />
+
+    {/* Clear search */}
+    {searchTerm && (
+      <button
+        type="button"
+        onClick={() => setSearchTerm("")}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+        aria-label="Clear search"
+      >
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 6l12 12M18 6 6 18"
+          />
+        </svg>
+      </button>
+    )}
+  </div>
+</div>
 
       {/* User List */}
       <div className="flex-1 overflow-y-auto p-2">
@@ -237,51 +311,84 @@ const Sidebar = ({ setSelectedUser }: SidebarProps) => {
               const isSelected = selectedUserId === user._id;
               return (
                 <button
-                  key={user._id}
-                  onClick={() => handleUserClick(user)}
-                  className={`
-                    w-full rounded-lg border px-3 py-2 text-left transition-all
-                    ${
-                      isSelected
-                        ? "border-blue-300 bg-blue-50 shadow-sm ring-1 ring-blue-300"
-                        : "border-transparent hover:border-gray-200 hover:bg-gray-50"
-                    }
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
-                  `}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-                        <span className="text-sm font-medium text-white">
-                          {user.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      {onlineUsers.includes(user._id) && (
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
-                      )}
-                    </div>
+  key={user._id}
+  onClick={() => handleUserClick(user)}
+  className={`
+    group w-full rounded-xl px-3 py-3 text-left transition-all duration-200
+    ${
+      isSelected
+        ? "bg-blue-50 shadow-sm ring-1 ring-blue-200"
+        : "hover:bg-gray-50"
+    }
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+  `}
+>
+  <div className="flex items-center gap-3">
+    {/* Avatar */}
+    <div className="relative shrink-0">
+      <div
+        className={`
+          flex h-11 w-11 items-center justify-center rounded-full
+          bg-gradient-to-br from-blue-500 to-indigo-600
+          shadow-sm transition-transform duration-200
+          group-hover:scale-105
+        `}
+      >
+        <span className="text-sm font-semibold text-white">
+          {user.name.charAt(0).toUpperCase()}
+        </span>
+      </div>
 
-                    {/* User details */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-medium text-gray-900">
-                          {user.name}
-                        </p>
-                        {unreadCounts[user._id] > 0 && (
-                          <span className="ml-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
-                            {unreadCounts[user._id] > 99
-                              ? "99+"
-                              : unreadCounts[user._id]}
-                          </span>
-                        )}
-                      </div>
-                      <p className="truncate text-xs text-gray-500">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </button>
+      {/* Online indicator */}
+      {onlineUsers.includes(user._id) && (
+        <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
+      )}
+    </div>
+
+    {/* User details */}
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center justify-between gap-2">
+        <p
+          className={`
+            truncate text-sm font-semibold
+            ${isSelected ? "text-blue-900" : "text-gray-900"}
+          `}
+        >
+          {user.name}
+        </p>
+
+        {/* Unread badge */}
+        {unreadCounts[user._id] > 0 && (
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white shadow-sm">
+            {unreadCounts[user._id] > 99
+              ? "99+"
+              : unreadCounts[user._id]}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-1 flex items-center gap-1.5">
+        {onlineUsers.includes(user._id) ? (
+          <>
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+            <span className="text-xs font-medium text-green-600">
+              Online
+            </span>
+          </>
+        ) : (
+          <span className="truncate text-xs text-gray-400">
+            {user.email}
+          </span>
+        )}
+      </div>
+    </div>
+
+    {/* Selected indicator */}
+    {isSelected && (
+      <div className="h-8 w-1 shrink-0 rounded-full bg-blue-600" />
+    )}
+  </div>
+</button>
               );
             })}
           </div>
@@ -289,56 +396,57 @@ const Sidebar = ({ setSelectedUser }: SidebarProps) => {
       </div>
 
       {/* Logout Button */}
-      <div className="border-t border-gray-200 p-3">
-        <button
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:opacity-50"
+      {/* Logout Button */}
+<div className="border-t border-gray-200 bg-white p-3">
+  <button
+    onClick={handleLogout}
+    disabled={isLoggingOut}
+    className="group flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    {isLoggingOut ? (
+      <>
+        <svg
+          className="h-4 w-4 animate-spin"
+          viewBox="0 0 24 24"
+          fill="none"
         >
-          {isLoggingOut ? (
-            <>
-              <svg
-                className="h-4 w-4 animate-spin"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              Logging out...
-            </>
-          ) : (
-            <>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </>
-          )}
-        </button>
-      </div>
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
+        Logging out...
+      </>
+    ) : (
+      <>
+        <svg
+          className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+
+        <span>Logout</span>
+      </>
+    )}
+  </button>
+</div>
     </div>
   );
 };

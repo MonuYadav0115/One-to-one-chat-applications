@@ -313,13 +313,15 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
 
   const isUserOnline = onlineUsers.includes(selectedUser?._id || "");
 
-  // Empty state
-  if (!selectedUser) {
-    return (
-      <div className="flex flex-1 items-center justify-center bg-gray-50">
-        <div className="text-center">
+// Empty state
+if (!selectedUser) {
+  return (
+    <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50 px-6">
+      <div className="max-w-sm text-center">
+        {/* Icon */}
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-100 shadow-sm">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="h-10 w-10 text-blue-600"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -328,76 +330,26 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={1.5}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">
-            Select a conversation
-          </h3>
-
-          <p className="mt-2 text-sm text-gray-500">
-            Choose a user from the sidebar to start chatting
-          </p>
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="flex flex-1 flex-col bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-              <span className="text-sm font-semibold text-white">
-                {selectedUser.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
+        {/* Heading */}
+        <h3 className="mt-6 text-xl font-semibold text-gray-900">
+          Welcome to Chat
+        </h3>
 
-            <div
-              className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white ${
-                isUserOnline ? "bg-green-500" : "bg-gray-400"
-              }`}
-            />
-          </div>
+        {/* Description */}
+        <p className="mt-2 text-sm leading-6 text-gray-500">
+          Select a conversation from the sidebar to start
+          messaging with someone.
+        </p>
 
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {selectedUser.name}
-            </h2>
-
-            <p className="text-xs text-gray-500">
-              {isUserOnline ? (
-                <span className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Online
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
-                  Offline
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="border-b border-gray-100 bg-gray-50 px-4 py-2">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search messages..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-
+        {/* Hint */}
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs text-gray-400 shadow-sm ring-1 ring-gray-200">
           <svg
-            className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
+            className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -405,12 +357,116 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              strokeWidth={1.5}
+              d="M12 6v6l4 2"
             />
           </svg>
+
+          Choose a conversation to begin
         </div>
       </div>
+    </div>
+  );
+}
+
+  return (
+    <div className="flex flex-1 flex-col bg-white">
+      {/* Header */}
+<div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
+  <div className="flex min-w-0 items-center gap-3">
+    {/* Avatar */}
+    <div className="relative shrink-0">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
+        <span className="text-base font-semibold text-white">
+          {selectedUser.name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+
+      {/* Online Indicator */}
+      <span
+        className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${
+          isUserOnline ? "bg-green-500" : "bg-gray-400"
+        }`}
+      />
+    </div>
+
+    {/* User Info */}
+    <div className="min-w-0">
+      <h2 className="truncate text-sm font-semibold text-gray-900 md:text-base">
+        {selectedUser.name}
+      </h2>
+
+      <div className="mt-0.5 flex items-center gap-1.5">
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${
+            isUserOnline ? "bg-green-500" : "bg-gray-400"
+          }`}
+        />
+
+        <span
+          className={`text-xs ${
+            isUserOnline ? "text-green-600" : "text-gray-400"
+          }`}
+        >
+          {isUserOnline ? "Online" : "Offline"}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+      {/* Search Bar */}
+<div className="border-b border-gray-100 bg-gray-50 px-3 py-2 md:px-4">
+  <div className="relative">
+    <svg
+      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
+
+    {/* Search Input */}
+    <input
+      type="text"
+      placeholder="Search messages..."
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+      className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+    />
+
+    {/* Clear Search */}
+    {searchText && (
+      <button
+        type="button"
+        onClick={() => setSearchText("")}
+        className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        title="Clear search"
+        aria-label="Clear search"
+      >
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    )}
+  </div>
+</div>
 
       {/* Messages Area */}
       <div
@@ -498,40 +554,44 @@ const ChatWindow = ({ selectedUser }: ChatWindowProps) => {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white px-4 py-3">
-        <div className="flex items-end gap-2">
-          <textarea
-            value={text}
-            onChange={(e) => handleTyping(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            rows={1}
-            className="max-h-32 min-h-[44px] flex-1 resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
+<div className="border-t border-gray-200 bg-white px-3 py-3 md:px-4">
+  <div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm transition-all focus-within:border-blue-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/10">
+    <textarea
+      value={text}
+      onChange={(e) => handleTyping(e.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder="Type a message..."
+      rows={1}
+      className="max-h-32 min-h-[40px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0"
+    />
 
-          <button
-            onClick={handleSend}
-            disabled={!text.trim()}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span>Send</span>
+    <button
+      onClick={handleSend}
+      disabled={!text.trim()}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-300"
+      title="Send message"
+      aria-label="Send message"
+    >
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 19l9 2-9-18-9 18-9 2 9-2v-8"
+        />
+      </svg>
+    </button>
+  </div>
 
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
+  <p className="mt-1.5 hidden text-center text-[10px] text-gray-400 sm:block">
+    Press Enter to send • Shift + Enter for new line
+  </p>
+</div>
     </div>
   );
 };
