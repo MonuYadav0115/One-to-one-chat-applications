@@ -28,13 +28,13 @@ const MessageBubble = ({
   // Format time safely
   const formatTime = (dateString?: string) => {
     if (!dateString) return "";
-    
+
     try {
       const date = new Date(dateString);
-      
+
       // Check if date is valid
       if (isNaN(date.getTime())) return "";
-      
+
       return date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -53,7 +53,12 @@ const MessageBubble = ({
       sent: {
         icon: (
           <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M12.5 4l-7 7-3-3" stroke="currentColor" fill="none" strokeWidth="2" />
+            <path
+              d="M12.5 4l-7 7-3-3"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+            />
           </svg>
         ),
         label: "Sent",
@@ -62,8 +67,19 @@ const MessageBubble = ({
       delivered: {
         icon: (
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M12.5 4l-7 7-3-3" stroke="currentColor" fill="none" strokeWidth="2" />
-            <path d="M15.5 4l-7 7-3-3" stroke="currentColor" fill="none" strokeWidth="2" transform="translate(3, -2)" />
+            <path
+              d="M12.5 4l-7 7-3-3"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+            />
+            <path
+              d="M15.5 4l-7 7-3-3"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+              transform="translate(3, -2)"
+            />
           </svg>
         ),
         label: "Delivered",
@@ -72,8 +88,19 @@ const MessageBubble = ({
       seen: {
         icon: (
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M12.5 4l-7 7-3-3" stroke="currentColor" fill="none" strokeWidth="2" />
-            <path d="M15.5 4l-7 7-3-3" stroke="currentColor" fill="none" strokeWidth="2" transform="translate(3, -2)" />
+            <path
+              d="M12.5 4l-7 7-3-3"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+            />
+            <path
+              d="M15.5 4l-7 7-3-3"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+              transform="translate(3, -2)"
+            />
           </svg>
         ),
         label: "Seen",
@@ -85,13 +112,16 @@ const MessageBubble = ({
     if (!status) return null;
 
     return (
-      <span className={`inline-flex items-center ${status.className}`} title={status.label}>
+      <span
+        className={`inline-flex items-center ${status.className}`}
+        title={status.label}
+      >
         {status.icon}
       </span>
     );
   };
 
-    return (
+  return (
     <div
       className={`group flex w-full px-4 py-1.5 ${
         isMine ? "justify-end" : "justify-start"

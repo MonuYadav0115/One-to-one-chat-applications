@@ -159,9 +159,7 @@ const Login = () => {
                     type="email"
                     placeholder="Enter Your E-mail"
                     value={email}
-                    onChange={(e) =>
-                      handleFieldChange("email", e.target.value)
-                    }
+                    onChange={(e) => handleFieldChange("email", e.target.value)}
                     disabled={isLoading}
                     autoComplete="email"
                     className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 ${

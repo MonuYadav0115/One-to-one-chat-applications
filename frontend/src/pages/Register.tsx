@@ -62,7 +62,7 @@ const Register = () => {
       navigate("/login");
     } catch (error: any) {
       console.error("Registration failed:", error);
-      
+
       // Handle different types of errors
       if (error?.response?.data?.message) {
         setError(error.response.data.message);
@@ -79,7 +79,7 @@ const Register = () => {
   // Clear field error when user starts typing
   const handleFieldChange = (
     field: "name" | "email" | "password",
-    value: string
+    value: string,
   ) => {
     switch (field) {
       case "name":
@@ -362,15 +362,15 @@ const Register = () => {
                             password.length >= 8
                               ? "bg-green-500"
                               : password.length >= 6
-                              ? "bg-yellow-500"
-                              : "bg-gray-200"
+                                ? "bg-yellow-500"
+                                : "bg-gray-200"
                           } ${
                             level <=
                             (password.length >= 8
                               ? 4
                               : password.length >= 6
-                              ? 2
-                              : 1)
+                                ? 2
+                                : 1)
                               ? "opacity-100"
                               : "opacity-30"
                           }`}
@@ -381,8 +381,8 @@ const Register = () => {
                       {password.length < 6
                         ? "Weak password"
                         : password.length < 8
-                        ? "Fair password"
-                        : "Strong password"}
+                          ? "Fair password"
+                          : "Strong password"}
                     </p>
                   </div>
                 )}

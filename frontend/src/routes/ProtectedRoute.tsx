@@ -11,4 +11,4 @@ const ProtectedRoute = ({ children }: Props) => {
   return token ? <>{children}</> : <Navigate to="/login" />;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;
